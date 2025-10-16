@@ -55,16 +55,24 @@ tables:
       value: driverId
     driver_ref:
       value: driverRef
+      normalize_ref: true
     code:
       value: code
+      upper: true
     forename:
       value: forename
+      strip: true
+      title: true
     surname:
       value: surname
+      strip: true
+      title: true
     nationality:
       value: nationalityDrivers
+      title: true
     number:
       value: number
+      int: true
     url:
       value: urlDrivers
 
@@ -73,10 +81,14 @@ tables:
       value: constructorId
     constructor_ref:
       value: constructorRef
+      normalize_ref: true
     name:
       value: nameConstructors
+      strip: true
+      title: true
     nationality:
       value: nationalityConstructors
+      title: true
     url:
       value: urlConstructors
 
@@ -85,24 +97,36 @@ tables:
       value: circuitId
     circuit_ref:
       value: circuitRef
+      normalize_ref: true
     name:
       value: nameCircuits
+      strip: true
+      title: true
     location:
       value: location
+      strip: true
+      title: true
     country:
       value: countryCircuits
+      strip: true
+      title: true
     altitude:
       value: altitude
+      int: true
     latitude:
       value: latitude
+      float: true
+      decimals: 6
     longitude:
       value: longitude
+      float: true
+      decimals: 6
     url:
       value: urlCircuits
 
   dim_date:
     date:
-     value: date
+      value: date
     year: { value: date, date: true }
     month: { value: date, date: true }
     day: { value: date, date: true }
@@ -112,8 +136,11 @@ tables:
       value: raceId
     name:
       value: nameRaces
+      strip: true
+      title: true
     round:
       value: round
+      int: true
     year: { value: date, date: true }
     url:
       value: urlRaces
@@ -129,7 +156,7 @@ tables:
     q2_sec: { value: q2, duration_sec: true }
     q3_sec: { value: q3, duration_sec: true }
 
-    position: 
+    position:
       value: position
 
 config:
@@ -143,9 +170,7 @@ config:
       criteria: driver_nk
       method: ignore
     onNull:
-      method: default
-      criteria:
-        driver_nk: null
+      require: [driver_nk, driver_ref, forename, surname]
 
   dim_constructor:
     design: dimension
@@ -157,9 +182,7 @@ config:
       criteria: constructor_nk
       method: ignore
     onNull:
-      method: default
-      criteria:
-        constructor_nk: null
+      require: [constructor_nk, constructor_ref, name]
 
   dim_circuit:
     design: dimension
@@ -171,9 +194,7 @@ config:
       criteria: circuit_nk
       method: ignore
     onNull:
-      method: default
-      criteria:
-        circuit_nk: null
+      require: [circuit_nk, circuit_ref, name, location, country]
 
   dim_date:
     design: dimension
@@ -185,9 +206,7 @@ config:
       criteria: [year, month, day]
       method: ignore
     onNull:
-      method: default
-      criteria:
-        date: null
+      require: [date, year, month, day]
 
   dim_race:
     design: dimension
@@ -199,9 +218,7 @@ config:
       criteria: race_nk
       method: ignore
     onNull:
-      method: default
-      criteria:
-        race_nk: null
+      require: [race_nk, name, round, year]
 
   fact_qualifying:
     design: fact
@@ -214,14 +231,5 @@ config:
       method: update
 
     onNull:
-      method: default
-      criteria:
-        race_id: null
-        driver_id: null
-        constructor_id: null
-        circuit_id: null
-        date_id: null
-        q1_sec: null
-        q2_sec: null
-        q3_sec: null
-        position: null
+      require: [race_id, driver_id, constructor_id, circuit_id, date_id, q1_sec, position]
+

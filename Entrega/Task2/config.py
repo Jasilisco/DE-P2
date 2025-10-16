@@ -2,6 +2,7 @@ import yaml
 from pathlib import Path
 import sys
 
+
 class Config:
     def __init__(self, yaml_path: str):
         self.yaml_path = Path(yaml_path)
@@ -16,10 +17,10 @@ class Config:
             table_map = {}
             for col_name, rules in cols.items():
                 if isinstance(rules, dict):
-                    if list(rules.keys()) == ['value']:
-                        table_map[col_name] = rules['value']
-                    elif list(rules.keys()) == ['mapped']:
-                        table_map[col_name] = rules['mapped']
+                    if list(rules.keys()) == ["value"]:
+                        table_map[col_name] = rules["value"]
+                    elif list(rules.keys()) == ["mapped"]:
+                        table_map[col_name] = rules["mapped"]
                     else:
                         table_map[col_name] = rules
                 else:
@@ -64,10 +65,10 @@ class Config:
                     if len(param) > 1:
                         onNullAux[table] = {param["method"]: param["criteria"]}
                     else:
-                        onNullAux[table] = param["method"]
-                elif (configAux == "design"):
+                        onNullAux[table] = param
+                elif configAux == "design":
                     designAux[table] = param
-                elif (configAux == "id"):
+                elif configAux == "id":
                     idAux[table] = param
                 else:
                     raise ValueError(f"Unrecognized config for table {table} found in config file: {param}")
@@ -78,7 +79,7 @@ class Config:
         for table, columns in self.tables.items():
             attributes = list(columns.keys())
             result[table] = attributes
-            
+
         for table, id_col in self.idMapping.items():
             if table not in result:
                 result[table] = []
@@ -106,6 +107,7 @@ class Config:
 
     def get_dbConnection(self):
         return f"mysql+pymysql://{self.db_user}:{self.db_password}@{self.db_host}:{self.db_port}/{self.db_name}"
+
 
 if len(sys.argv) < 2:
     raise Exception("The path of the config file must be providen")

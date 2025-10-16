@@ -19,8 +19,8 @@ CREATE TABLE IF NOT EXISTS dim_circuit (
   location VARCHAR(200),
   country VARCHAR(100),
   altitude INT,
-  lat DECIMAL(9,6),
-  lng DECIMAL(9,6),
+  latitude DECIMAL(9,6),
+  longitude DECIMAL(9,6),
   UNIQUE KEY uq_circuit_nk (circuit_nk),
   UNIQUE KEY uq_circuitRef (circuit_ref)
 ) engine=InnoDB;

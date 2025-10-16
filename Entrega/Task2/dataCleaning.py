@@ -1,39 +1,50 @@
 import pandas as pd
 from config import cfg
 
-def onNull(records, table):
-    null_rule = cfg.onNull.get(table, "ignore")
 
+def onNull(records, table):
+    # This function is now updated with the 'require' logic
     if not records:
         return records
 
-    def normalize(value):
-        if isinstance(value, str):
-            stripped = value.strip()
-            if stripped in ("", "\\N", "None"):
-                return None
-            if stripped.lower() == "nan":
-                return None
-            return value
-        return None if pd.isna(value) else value
+    # First, handle required fields. If a required field is null, drop the row.
+    null_rule = cfg.onNull.get(table, {})
+    required_fields = null_rule.get("require", [])
 
-    records = [{k: normalize(v) for k, v in record.items()} for record in records]
+    if required_fields:
+        original_count = len(records)
 
-    if null_rule == "ignore":
-        return [
+        # We need to use a standard None representation first
+        def normalize(value):
+            if isinstance(value, str):
+                stripped = value.strip()
+                if stripped.lower() in ("", "\\n", "none", "nan", "na", "n/a", "\\N"):
+                    return None
+            return None if pd.isna(value) else value
+
+        records = [
             r
             for r in records
-            if all(pd.notna(v) and v not in ("", None) for v in r.values())
+            if all(normalize(r.get(field)) is not None for field in required_fields)
         ]
-    elif isinstance(null_rule, dict) and "default" in null_rule:
-        default_values = null_rule["default"]
+        dropped_count = original_count - len(records)
+        if dropped_count > 0:
+            print(
+                f"[INFO] Table '{table}': Dropped {dropped_count} rows due to missing required fields."
+            )
+
+    # Second, apply default or substitution logic (for backward compatibility)
+    method = null_rule.get("method")
+    if method == "default":
+        default_values = null_rule.get("criteria", {})
         for r in records:
             for field, default in default_values.items():
                 if pd.isna(r.get(field)) or r.get(field) in ("", None):
                     r[field] = default
         return records
-    elif isinstance(null_rule, dict) and "substitution" in null_rule:
-        criteria = null_rule.get("substitution", {})
+    elif method == "substitution":
+        # (This logic remains the same)
+        criteria = null_rule.get("criteria", {})
         for r in records:
             for field, substitute in criteria.items():
                 if pd.isna(r.get(field)) or r.get(field) in ("", None):
@@ -42,10 +53,10 @@ def onNull(records, table):
                     else:
                         r[field] = substitute
         return records
-    else:
-        raise ValueError(
-            f"[ERROR] Unknown null handling rule for table {table}: {null_rule}"
-        )
+
+    # Default behavior if no specific 'method' is provided after require check
+    return records
+
 
 def onDuplicate(records, table):
     dup_rule = cfg.onDuplicateRule.get(table, "ignore")

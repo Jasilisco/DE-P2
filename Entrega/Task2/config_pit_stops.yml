@@ -40,22 +40,31 @@ database:
   port: 3306
   name: f1_pit_stops
 
+# Mapping of source fields to target table fields, including normalization rules
 tables:
   dim_driver:
     driver_nk :
       value: driverId
     driver_ref: 
       value: driverRef
+      normalize_ref: true
     code: 
       value: code
+      upper: true
     forename: 
       value: forename
+      strip: true
+      title: true
     surname: 
       value: surname
+      strip: true
+      title: true
     nationality: 
       value: nationalityDrivers
+      title: true
     number: 
       value: number
+      int: true
     url: 
       value: urlDrivers
 
@@ -64,18 +73,30 @@ tables:
       value: circuitId
     circuit_ref: 
       value: circuitRef
+      normalize_ref: true
     name: 
       value: nameCircuits
+      strip: true
+      title: true
     location: 
       value: location
+      strip: true
+      title: true
     country: 
       value: countryCircuits
+      strip: true
+      title: true
     altitude: 
       value: altitude
+      int: true
     latitude: 
       value: latitude
+      float: true
+      decimals: 4     # 4 should be enough for lat/long precision
     longitude: 
       value: longitude
+      float: true
+      decimals: 4
     url: 
       value: urlCircuits
 
@@ -91,8 +112,11 @@ tables:
       value: raceId
     name: 
       value: nameRaces
+      strip: true
+      title: true
     round: 
       value: round
+      int: true
     year: { value: date, date: true }
     url: 
       value: urlRaces
@@ -105,11 +129,16 @@ tables:
 
     stop: 
       value: stop
+      int: true
     lap: 
       value:  lap
+      int: true
     duration_ms: 
-      value:  milliseconds
+      value: milliseconds
+      int: true
 
+# Require for each table the essential fields to be non-null, otherwise the record is not useful
+# Also define the criteria for handling duplicates (ignore or update)
 config:
   dim_driver:
     design: dimension
@@ -121,9 +150,7 @@ config:
       criteria: driver_nk
       method: ignore 
     onNull:
-      method: default
-      criteria:
-        driver_nk: null
+      require: [driver_nk, driver_ref, forename, surname]
 
   dim_circuit:
     design: dimension
@@ -135,9 +162,7 @@ config:
       criteria: circuit_nk
       method: ignore
     onNull:
-      method: default
-      criteria:
-        circuit_nk: null
+      require: [circuit_nk, circuit_ref, name, location, country]
 
   dim_date:
     design: dimension
@@ -149,9 +174,7 @@ config:
       criteria: [year, month, day]
       method: ignore
     onNull:
-      method: default
-      criteria:
-        date: null
+      require: [date, year, month, day]
 
   dim_race:
     design: dimension
@@ -163,9 +186,8 @@ config:
       criteria: race_nk
       method: ignore
     onNull:
-      method: default
-      criteria:
-        race_nk: null
+      require: [race_nk, name, round, year]
+
 
   fact_pit_stops:
     design: fact
@@ -176,15 +198,11 @@ config:
     onDuplicateDB:
       criteria: [race_id, driver_id, stop, lap]
       method: update    
+      method: update
+
+    # Some values can be null (e.g. time if not recorded), so we do not require them
+    # Require foreign keys and essential fields, which if null then there is no point in keeping the record
     onNull:
-      method: default
-      criteria:
-        race_id: null
-        driver_id: null
-        constructor_id: null
-        circuit_id: null
-        date_id: null
-        stop: -1
-        lap: -1
-        duration_ms: -1
+      require: [race_id, driver_id, circuit_id, date_id, stop, lap, duration_ms]
+
         

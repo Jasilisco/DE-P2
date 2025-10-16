@@ -1,4 +1,35 @@
 import pandas as pd
+import re
+
+NULL_LIKE = {"", "\\N", "None", "null", None, "NaN"}
+
+def convert_to_none(val):
+    if val is None:
+        return None
+    
+    if isinstance(val, str):
+        val = val.strip()
+        if val.lower() in NULL_LIKE:
+            return None
+        return val
+    
+    if pd.isna(val):
+        return None
+    return val
+
+
+def normalize_ref(string):
+    if string is None:
+        return None
+    
+    string = str(string).strip().lower()
+    string = re.sub(r'\s+', '_', string)  # Replace multiple spaces with single space
+    string = re.sub(r'[^a-z0-9_]+', '', string)  # Remove non-alphanumeric characters except underscore
+    string = re.sub(r'_+', '_', string)  # Replace multiple underscores with single underscore
+    string = string.strip('_')  # Remove leading/trailing underscores
+
+    return string or None
+
 
 def splitDate(date, part):
     dates = pd.to_datetime(date, errors="coerce", dayfirst=False)
@@ -83,44 +114,46 @@ def parse_hour(value):
         return value.apply(to_hour)
     else:
         return to_hour(value)
-    
+
 def applyTransform(rules, df, col):
 
     if isinstance(rules, dict):
         mapping = rules.get("value", col)
-        transforms = {
-            "date": rules.get("date", False),
-            "day": rules.get("day", False),
-            "hour": rules.get("hour", False),
-            "duration_sec": rules.get("duration_sec", False)
-        }
+        transforms = rules
     else:
         mapping = rules
         transforms = {}
 
-    def sanitize(series):
-        if not isinstance(series, pd.Series):
-            series = pd.Series(series)
-        series = series.replace({"\\N": None, "": None, "None": None})
-        return series.where(~series.isna(), None)
-
     if mapping in df.columns:
-        series = df[mapping]
+        series = df[mapping].copy()
     elif col in df.columns:
-        series = df[col]
+        series = df[col].copy()
     else:
         raise KeyError(f"Neither '{mapping}' nor '{col}' found in dataframe columns: {list(df.columns)}")
 
-    transformers = {
-        "date": lambda s: splitDate(s, col),
-        "day": lambda s: getDayOfWeek(s),
-        "hour": lambda s: parse_hour(s),
-        "duration_sec": lambda s: parse_duration(s)
-    }
-    if(transforms):
-        for key, active in transforms.items():
-            if active:
-                series = transformers[key](series)
-                break
+    series = series.apply(convert_to_none)
 
-    return sanitize(series)
+    if transforms.get("int", False):
+        series = pd.to_numeric(series, errors="coerce").astype("Int64")
+    if transforms.get("float", False):
+        series = pd.to_numeric(series, errors="coerce").astype("float64")
+        if "decimals" in transforms:
+            decimals = transforms["decimals"]
+            if isinstance(decimals, int) and decimals >= 0:
+                series = series.round(decimals)
+
+    if transforms.get("normalize_ref", False):
+        series = series.apply(normalize_ref)
+
+    if transforms.get("date", False):
+        series = splitDate(series, col)
+    if transforms.get("day", False):
+        series = getDayOfWeek(series)
+    if transforms.get("hour", False):
+        series = parse_hour(series)
+    if transforms.get("duration_sec", False):
+        series = parse_duration(series)
+
+    series = series.astype(object).where(pd.notna(series), None)
+
+    return series
