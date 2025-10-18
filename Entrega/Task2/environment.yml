@@ -1,0 +1,11 @@
+name: DE-2
+channels:
+  - defaults
+dependencies:
+  - numpy
+  - python=3.13
+  - pandas
+  - pymysql
+  - sqlalchemy
+  - pyyaml
+  - pip

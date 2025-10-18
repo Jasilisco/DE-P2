@@ -1,9 +1,9 @@
 datasources:
   race_results:
-    name: "../DATASETS/results.csv"
+    name: "./DATASETS/results.csv"
     base: true
   races:
-    name: "../DATASETS/races.csv"
+    name: "./DATASETS/races.csv"
     mergeLogic:
       base: raceId
       field: raceId
@@ -12,7 +12,7 @@ datasources:
       url: urlRaces
       year: yearRaces
   drivers:
-    name: "../DATASETS/drivers.csv"
+    name: "./DATASETS/drivers.csv"
     mergeLogic:
       base: driverId
       field: driverId
@@ -20,7 +20,7 @@ datasources:
       url: urlDrivers
       nationality: nationalityDrivers
   circuits:
-    name: "../DATASETS/circuits.csv"
+    name: "./DATASETS/circuits.csv"
     mergeLogic:
       base: circuitId
       field: circuitId
@@ -32,7 +32,7 @@ datasources:
       lng: longitude
       url: urlCircuits
   constructors:
-    name: "../DATASETS/constructors.csv"
+    name: "./DATASETS/constructors.csv"
     mergeLogic:
       base: constructorId
       field: constructorId
@@ -41,7 +41,7 @@ datasources:
       nationality: nationalityConstructors
       url: urlConstructors
   status:
-    name: "../DATASETS/status.csv"
+    name: "./DATASETS/status.csv"
     mergeLogic:
       base: statusId
       field: statusId
@@ -80,6 +80,7 @@ tables:
       int: true
     url:
       value: urlDrivers
+      strip: true
 
   dim_constructor:
     constructor_nk:
@@ -183,10 +184,6 @@ tables:
 
     time_ms:
       value: milliseconds
-      int: true
-
-    fastest_lap:
-      value: fastestLap
       int: true
 
     fastest_lap:

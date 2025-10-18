@@ -1,9 +1,9 @@
 datasources:
   qualifying:
-    name: "../DATASETS/qualifying.csv"
+    name: "./DATASETS/qualifying.csv"
     base: true
   races:
-    name: "../DATASETS/races.csv"
+    name: "./DATASETS/races.csv"
     mergeLogic:
       base: raceId
       field: raceId
@@ -12,7 +12,7 @@ datasources:
       url: urlRaces
       year: yearRaces
   drivers:
-    name: "../DATASETS/drivers.csv"
+    name: "./DATASETS/drivers.csv"
     mergeLogic:
       base: driverId
       field: driverId
@@ -20,7 +20,7 @@ datasources:
       url: urlDrivers
       nationality: nationalityDrivers
   circuits:
-    name: "../DATASETS/circuits.csv"
+    name: "./DATASETS/circuits.csv"
     mergeLogic:
       base: circuitId
       field: circuitId
@@ -32,7 +32,7 @@ datasources:
       lng: longitude
       url: urlCircuits
   constructors:
-    name: "../DATASETS/constructors.csv"
+    name: "./DATASETS/constructors.csv"
     mergeLogic:
       base: constructorId
       field: constructorId

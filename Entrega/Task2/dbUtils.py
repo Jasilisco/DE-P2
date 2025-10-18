@@ -207,15 +207,33 @@ def checkDBSctructure():
         schema = {}
         for table_name, table in metadata.tables.items():
             schema[table_name] = [col.name for col in table.columns]
+
         modelStructure = cfg.db_Skeleton()
-        if schema.keys() != modelStructure.keys():
+
+        # Check if database has any tables
+        if not schema:
+            print("[INFO] Database exists but has no tables")
             return False
+
+        # Check if all required tables exist
+        if schema.keys() != modelStructure.keys():
+            print(
+                f"[INFO] Schema mismatch - Expected tables: {set(modelStructure.keys())}, Found: {set(schema.keys())}"
+            )
+            return False
+
+        # Check if all tables have correct columns
         for key in schema:
             if set(schema[key]) != set(modelStructure[key]):
+                print(
+                    f"[INFO] Column mismatch in table '{key}' - Expected: {set(modelStructure[key])}, Found: {set(schema[key])}"
+                )
                 return False
+
+        print("[INFO] Database schema is correct")
         return True
+
     except Exception as ex:
         url = cfg.get_dbConnection()
-        print(f"[ERROR] An error ocurred checking {url}: \n", ex)
-        url = cfg.get_dbConnection()
-        print(f"[ERROR] An error occurred checking {url}: \n", ex)
+        print(f"[INFO] Database does not exist or cannot be accessed: {ex}")
+        return False

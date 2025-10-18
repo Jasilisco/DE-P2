@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS dim_driver (
   forename VARCHAR(100),
   surname VARCHAR(100),
   nationality VARCHAR(100),
+  url VARCHAR(255),
   number INT,
   UNIQUE KEY uq_driver_nk (driver_nk),
   UNIQUE KEY uq_driverRef (driver_ref)
@@ -21,6 +22,7 @@ CREATE TABLE IF NOT EXISTS dim_circuit (
   altitude INT,
   latitude DECIMAL(9,6),
   longitude DECIMAL(9,6),
+  url VARCHAR(255),
   UNIQUE KEY uq_circuit_nk (circuit_nk),
   UNIQUE KEY uq_circuitRef (circuit_ref)
 ) engine=InnoDB;
@@ -40,6 +42,7 @@ CREATE TABLE IF NOT EXISTS dim_race (
   name VARCHAR(200),
   round INT,
   year SMALLINT,
+  url VARCHAR(255),
   UNIQUE KEY uq_race_nk (race_nk)
 ) engine=InnoDB;
 

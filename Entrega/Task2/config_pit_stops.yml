@@ -1,9 +1,9 @@
 datasources: 
   pit_stops: 
-    name: '../DATASETS/pit_stops.csv'
+    name: './DATASETS/pit_stops.csv'
     base: true
   races: 
-    name: '../DATASETS/races.csv'
+    name: './DATASETS/races.csv'
     mergeLogic:
       base: raceId
       field: raceId
@@ -12,7 +12,7 @@ datasources:
       name: nameRaces
       year: yearRaces
   drivers:
-    name: "../DATASETS/drivers.csv"
+    name: "./DATASETS/drivers.csv"
     mergeLogic:
       base: driverId
       field: driverId
@@ -20,7 +20,7 @@ datasources:
       url: urlDrivers
       nationality: nationalityDrivers
   circuits:
-    name: "../DATASETS/circuits.csv"
+    name: "./DATASETS/circuits.csv"
     mergeLogic:
       base: circuitId
       field: circuitId
